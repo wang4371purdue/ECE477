@@ -33,8 +33,9 @@ void enable_ports(void) {
     GPIOA->MODER |= 0x00050000;
     GPIOB->PUPDR |= 0xaaaaaaa;
     GPIOA->PUPDR |= 0xaaaaaaa;
+    GPIOC->MODER |= 0xffffffff;
     GPIOC->MODER &= ~0xffffffff;
-    GPIOC->PUPDR |= 0xaaaaaaa;
+    //GPIOC->PUPDR |= 0x55555555;
     //GPIOB->PUPDR |= 0x55555595;
     //GPIOB->PUPDR |= 0x00000040;
 }
@@ -45,13 +46,11 @@ int main(void)
 	enable_ports();
 	//enable_TIM2();
 	//TIM2->CR1 |= 0x1;
-	GPIOB->ODR = 0xffff;
-	GPIOA->ODR = 0xffff;
-	//for(;;){
+	while(1){
 
-		//play_game();
-		//nano_wait(500);
-	//}
+		play_game();
+		nano_wait(500);
+	}
 }
 
 void enable_TIM2(void){
@@ -78,51 +77,46 @@ void play_game(void){
 		pick_target();
 	}
 	else if (target == 1){
-		GPIOB->ODR |= 0x0100;
+		GPIOB->ODR = 0x0100;
 		hit = GPIOC->IDR;
 		hit = hit & ~0xfff0;
-		if (hit != 0x0000){
-			if (hit == 0x0001) {
-				GPIOA->ODR |= 0x0100;
-				pick_target();
-			}
-			else {
-				GPIOA->ODR |= 0x0200;
-				nano_wait(500);
-				pick_target();
-			}
-		}
-	}
-	else if (target == 2){
-		GPIOB->ODR |= 0x0200;
-		hit = GPIOC->IDR;
-		hit = hit & ~0xfff0;
-		if (hit != 0x0000){
-			if (hit == 0x0002) {
-				GPIOA->ODR |= 0x0100;
+		if (hit != 0x000f){
+			if (hit == 0x0007) {
+				GPIOA->ODR = 0x0100;
 				pick_target();
 			}
 			else {
 				GPIOA->ODR = 0x0200;
 				nano_wait(500);
+			}
+		}
+	}
+	else if (target == 2){
+		GPIOB->ODR = 0x0200;
+		hit = GPIOC->IDR;
+		hit = hit & ~0xfff0;
+		if (hit != 0x000f){
+			if (hit == 0x000b) {
+				GPIOA->ODR = 0x0100;
 				pick_target();
+			}
+			else {
+				GPIOA->ODR = 0x0200;
 			}
 		}
 
 	}
 	else if (target == 3){
-		GPIOB->ODR |= 0x0400;
+		GPIOB->ODR = 0x0400;
 		hit = GPIOC->IDR;
 		hit = hit & ~0xfff0;
-		if (hit != 0x0000){
-			if (hit == 0x0002) {
-				GPIOA->ODR |= 0x0100;
+		if (hit != 0x000f){
+			if (hit == 0x000d) {
+				GPIOA->ODR = 0x0100;
 				pick_target();
 			}
 			else {
-				GPIOA->ODR |= 0x0200;
-				nano_wait(500);
-				pick_target();
+				GPIOA->ODR = 0x0200;
 			}
 		}
 	}
@@ -130,15 +124,13 @@ void play_game(void){
 		GPIOB->ODR = 0x0800;
 		hit = GPIOC->IDR;
 		hit = hit & ~0xfff0;
-		if (hit != 0x0000){
-			if (hit == 0x0002) {
-				GPIOA->ODR |= 0x0100;
+		if (hit != 0x000f){
+			if (hit == 0x000e) {
+				GPIOA->ODR = 0x0100;
 				pick_target();
 			}
 			else {
-				GPIOA->ODR |= 0x0200;
-				nano_wait(500);
-				pick_target();
+				GPIOA->ODR = 0x0200;
 			}
 		}
 	}
@@ -163,3 +155,4 @@ void pick_target(void){
 		GPIOB->ODR = 0x0800;
 	}
 }
+
