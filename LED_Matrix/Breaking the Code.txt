@@ -1,0 +1,48 @@
+Initialization of Serial1 ising software serial library sets Tx to 5V
+no message seems to be sent on construction of DFR object or Baud Rate setting is Serial.begin There's some noise but it doesn't seem to be a message same for Serial1.begin
+Same for begin, but there might be some stuff you need behind the scenes
+Maybe this matters, one bit seems to be .054 ms rate seems to be 18518, but probably closer to 19200
+
+
+bytes seems to be about .372 ms, different from the byts
+
+Constructor() {
+	Takes SoftwareSerial object
+	hold serial variable
+	takes some variable
+		_moveMode    = eMoveHold;
+      		_backgroud   = eColorBlack;
+      		_font        = eColorBlue;
+      		_brightLevel = eBrightLevel_5;
+      		_speedLevel  = eSpeedLevel_1;
+    
+	  		memset(_sendBuf, 0 ,sizeof(_sendBuf));
+      		memset(_message, 0, sizeof(_message));
+      		for(int i = 0 ; i < BANNER; i++){
+          		_M[i] = 0x41 + i;
+      		}
+      			memcpy(_M, "ABCDEFGHI", BANNER);
+}
+
+DBG() {
+	{Serial.print("[");Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
+}
+
+
+Printing with 115200 baud rate serial does nothing, don't even know where this matters
+Need to print with SoftwareSerial Serial1 Object
+
+Serial1.print("[");
+Sends 500 us to 1.222 ms
+52 us per bit
+5 bits of 1, 1 bit of 0, 2 bits of 1, 1 bit of 0, 2 bits of 1
+11111011 011010 (1's rest of way)
+
+Serial1.print("[");Serial1.print(__FUNCTION__); (not sure what this function is)
+11111011 01101010 11001110 10101001 10100010 11101010 10111010 00001110 (all one's)
+
+screen.displaymessage("")
+11111110 01000010 10001010 10100000 11001010 00110010 10101100 10100000 00100000 00001000 00000010 00100001 01000001 01010000 01010110 01100101 00000101 001001110
+
+screen.displaymessage("0")
+11111110 01000010 10001010 10100000 11001010 00110010 10101100 10100000 00001000 00000010 00000000 10011000 00101000 00101010 00001010 11001100 10100000 10100000 00001000 00110010 01000010
