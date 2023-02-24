@@ -12,6 +12,8 @@
 #include "stm32f0xx.h"
 #include <stdint.h>
 
+
+
 // Uncomment only one of the following to test each step
 //#define STEP41
 //#define STEP42
@@ -62,11 +64,11 @@ void init_usart2() {
     USART2->CR1 &= ~(USART_CR1_OVER8);
 
     // baud rate of 115200 (115.2k baud)
-    USART2->BRR = 0x1A1; // look at table 96 of the family reference manual
+    USART2->BRR = 0x9C4; // look at table 96 of the family reference manual
 
     // enable transmitter and the receiver by setting the TE and RE bits
     USART2->CR1 |= USART_CR1_TE;
-    USART2->CR1 |= USART_CR1_RE;
+    //USART2->CR1 |= USART_CR1_RE;
 
     // enable the USART
     USART2->CR1 |= USART_CR1_UE;
@@ -74,7 +76,7 @@ void init_usart2() {
     // wait for the TE and RE bits to be acknowledged by checking the TEACK and REACK bits are both set in the ISR
     // indicates that the USART is ready to transmit and receive
     USART2->ISR |= USART_ISR_TEACK;
-    USART2->ISR |= USART_ISR_REACK;
+    //USART2->ISR |= USART_ISR_REACK;
 
 }
 
@@ -83,6 +85,7 @@ void init_usart2() {
 
 #include <stdio.h>
 #include "fifo.h"
+#include "tty.h"
 
 // TODO DMA data structures
 #define FIFOSIZE 16
@@ -102,20 +105,20 @@ void enable_tty_interrupt(void) {
 
     // The subroutine should also enable the RCC clock for DMA Controller 2
     RCC->AHBENR |= RCC_AHBENR_DMA2EN;
-    DMA2->RMPCR |= DMA_RMPCR2_CH1_USART2_RX;
+    DMA2->RMPCR |= DMA2_CH1_USART2_TX ;
     DMA2_Channel2->CCR &= ~DMA_CCR_EN;  // First make sure DMA is turned off
 
     // CMAR should be set to the address of serfifo
     DMA2_Channel2->CMAR = (uint32_t)(serfifo); // configure memory address
 
     // CPAR should be set to the address of the USART5->RDR
-    DMA2_Channel2->CPAR = (uint32_t)(&(USART2->RDR)); // Set CPAR to the address of the USART5->RDR register.
+    DMA2_Channel2->CPAR = (uint32_t)(&(USART2->TDR)); // Set CPAR to the address of the USART5->RDR register.
 
     // CNDTR should be set to FIFOSIZE
     DMA2_Channel2->CNDTR = FIFOSIZE;
 
     // The DIRection of copying should be from peripheral to memory
-    DMA2_Channel2->CCR &= ~DMA_CCR_DIR; // this sets it so it reads from peripheral
+    DMA2_Channel2->CCR |= DMA_CCR_DIR; // this sets it so it reads from peripheral
 
     // Neither the total-completion nor the half-transfer interrupt should be enabled
     DMA2_Channel2->CCR &= ~DMA_CCR_HTIE; // no total completion
@@ -193,7 +196,7 @@ int __io_getchar(void) {
 // TODO Copy the content for the USART5 ISR here
 // TODO Remember to look up for the proper name of the ISR function
 // name from startup_stm32.s
-void USART3_4_5_6_7_8_IRQHandler(void) {
+void USART2_IRQHandler(void) {
     while(DMA2_Channel2->CNDTR != sizeof serfifo - seroffset) {
         if (!fifo_full(&input_fifo))
             insert_echo_char(serfifo[seroffset]);
@@ -204,17 +207,8 @@ void USART3_4_5_6_7_8_IRQHandler(void) {
 int main() {
     init_usart2();
     enable_tty_interrupt();
-    setbuf(stdin,0); // These turn off buffering; more efficient, but makes it hard to explain why first 1023 characters not dispalyed
-    setbuf(stdout,0);
-    setbuf(stderr,0);
-    printf("Enter your name: "); // Types name but shouldn't echo the characters; USE CTRL-J to finish
-    char name[80];
-    fgets(name, 80, stdin);
-    printf("Your name is %s", name);
-    printf("Type any characters.\n"); // After, will type TWO instead of ONE
     for(;;) {
-        char c = getchar();
-        putchar(c);
+
     }
 }
 #endif
