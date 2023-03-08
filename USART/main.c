@@ -63,7 +63,7 @@ void init_usart2() {
     // use 16x oversampling
     USART2->CR1 &= ~(USART_CR1_OVER8);
 
-    // baud rate of 115200 (115.2k baud)
+    // baud rate of 19200 (19.2k baud)
     USART2->BRR = 0x9C4; // look at table 96 of the family reference manual
 
     // enable transmitter and the receiver by setting the TE and RE bits
@@ -97,7 +97,7 @@ void enable_tty_interrupt(void) {
     // Raise an interrupt every time the receive data register becomes not empty
     // Remember to set the proper bit in the NVIC ISER as well
     // Note that the name of the bit to set is difficult to determine. It is USART3_8_IRQn
-    USART2->CR1 |= USART_CR1_RXNEIE;
+    USART2->CR1 |= USART_CR1_TXEIE;
 
     // Trigger a DMA operation every time the receive data register becomes not empty
     USART2->CR3 |= USART_CR3_DMAT;
