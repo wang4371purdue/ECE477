@@ -27,10 +27,10 @@ void init_usart2() {
     // Enable GPIO C
 
     // Enable GPIO D
-    RCC->AHBENR |= RCC_AHBENR_GPIODEN; // enables port D
+    RCC->AHBENR |= RCC_AHBENR_GPIOAEN; // enables port D
 
     //GPIOC->MODER |= 0x2000000;
-    GPIOD->MODER |= 0x800;
+    GPIOA->MODER |= 0x20;
 
     // https://www.mouser.com/datasheet/2/389/dm00115237-1798191.pdf
     // tables 14-19
@@ -43,7 +43,7 @@ void init_usart2() {
     // AFR[0] -> AFRL
     // AFR[1] -> AFRH
     //GPIOC->AFR[1] |= 2<<16; // 0010 is AF2, and shift 16 bits left to reference pin 12
-    GPIOD->AFR[0] |= 2<<20; // 0010 is AF2, and shift 8 bits left to reference pin 2
+    GPIOA->AFR[0] |= 1<<8; // 0010 is AF2, and shift 8 bits left to reference pin 2
 
     // enable clock for USART
     RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
@@ -87,10 +87,14 @@ void init_usart2() {
 #include "fifo.h"
 #include "tty.h"
 
+uint8_t message[21] = {0xFE, 0x42, 0x8A, 0xA0, 0xCA, 0x32, 0xAC, 0xA0,
+					   0x08, 0x02, 0x00, 0x98, 0x28, 0x2A, 0x0A, 0xCC, 0xA0,
+					   0xA0, 0x08, 0x32, 0x42};
+
 // TODO DMA data structures
-#define FIFOSIZE 16
-char serfifo[FIFOSIZE];
-int seroffset = 0;
+//#define FIFOSIZE 16
+//char serfifo[FIFOSIZE];
+//int seroffset = 0;
 
 void enable_tty_interrupt(void) {
     // TODO
@@ -105,17 +109,17 @@ void enable_tty_interrupt(void) {
 
     // The subroutine should also enable the RCC clock for DMA Controller 2
     RCC->AHBENR |= RCC_AHBENR_DMA2EN;
-    DMA2->RMPCR |= DMA2_CH1_USART2_TX ;
+    DMA2->RMPCR |= DMA2_CH1_USART2_TX;
     DMA2_Channel2->CCR &= ~DMA_CCR_EN;  // First make sure DMA is turned off
 
     // CMAR should be set to the address of serfifo
-    DMA2_Channel2->CMAR = (uint32_t)(serfifo); // configure memory address
+    DMA2_Channel2->CMAR = (uint32_t)(message); // configure memory address
 
     // CPAR should be set to the address of the USART5->RDR
     DMA2_Channel2->CPAR = (uint32_t)(&(USART2->TDR)); // Set CPAR to the address of the USART5->RDR register.
 
     // CNDTR should be set to FIFOSIZE
-    DMA2_Channel2->CNDTR = FIFOSIZE;
+    DMA2_Channel2->CNDTR = 21;
 
     // The DIRection of copying should be from peripheral to memory
     DMA2_Channel2->CCR |= DMA_CCR_DIR; // this sets it so it reads from peripheral
